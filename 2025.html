@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2025 - 박선영</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: #000;
+            color: #fff;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Header */
+        header {
+            padding: 40px 0 60px;
+            text-align: center;
+            background: linear-gradient(135deg, #000 0%, #1a1a1a 100%);
+        }
+
+        .back-button {
+            position: absolute;
+            top: 40px;
+            left: 40px;
+            color: #fff;
+            text-decoration: none;
+            font-size: 2rem;
+            transition: all 0.3s ease;
+        }
+
+        .back-button:hover {
+            color: #ccc;
+            transform: translateX(-5px);
+        }
+
+        .year-title {
+            font-size: 3rem;
+            font-weight: 300;
+            letter-spacing: 3px;
+            margin-bottom: 20px;
+            background: linear-gradient(45deg, #fff, #ccc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* Main Content */
+        .main-content {
+            padding: 80px 0;
+            background: #fff;
+            color: #000;
+            min-height: 60vh;
+        }
+
+        .works-list {
+            list-style: none;
+            margin-top: 40px;
+        }
+
+        .work-item {
+            margin-bottom: 30px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 30px;
+        }
+
+        .work-item:last-child {
+            border-bottom: none;
+        }
+
+        .work-link {
+            display: block;
+            color: #000;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            padding: 20px 0;
+        }
+
+        .work-link:hover {
+            color: #666;
+            transform: translateX(10px);
+        }
+
+        .work-title {
+            font-size: 2rem;
+            font-weight: 300;
+            letter-spacing: 2px;
+            margin-bottom: 10px;
+        }
+
+        .work-year {
+            font-size: 0.9rem;
+            color: #999;
+            letter-spacing: 1px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .year-title {
+                font-size: 2rem;
+            }
+            
+            .back-button {
+                left: 20px;
+                top: 20px;
+            }
+            
+            .container {
+                padding: 0 15px;
+            }
+            
+            .work-title {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <a href="javascript:history.back()" class="back-button">←</a>
+        <div class="container">
+            <h1 class="year-title">2025</h1>
+        </div>
+    </header>
+
+    <section class="main-content">
+        <div class="container">
+            <ul class="works-list">
+                <li class="work-item">
+                    <a href="exhibitionism.html" class="work-link">
+                        <h2 class="work-title">Exhibitionism</h2>
+                        <p class="work-year">2025</p>
+                    </a>
+                </li>
+                
+                <li class="work-item">
+                    <a href="youarefinallyhere.html" class="work-link">
+                        <h2 class="work-title">You Are Finally Here</h2>
+                        <p class="work-year">2025</p>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </section>
+
+    <script>
+        // Smooth hover effects
+        document.addEventListener('DOMContentLoaded', function() {
+            const workLinks = document.querySelectorAll('.work-link');
+            
+            workLinks.forEach(link => {
+                link.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateX(10px)';
+                    this.style.color = '#666';
+                });
+                
+                link.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateX(0)';
+                    this.style.color = '#000';
+                });
+            });
+        });
+    </script>
+</body>
+</html>
