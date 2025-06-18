@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>You Are Finally Here - 박선영</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: #000;
+            color: #fff;
+            line-height: 1.8;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Header */
+        header {
+            padding: 40px 0 60px;
+            text-align: center;
+            background: linear-gradient(135deg, #000 0%, #1a1a1a 100%);
+        }
+
+        .back-button {
+            position: absolute;
+            top: 40px;
+            left: 40px;
+            color: #fff;
+            text-decoration: none;
+            font-size: 2rem;
+            transition: all 0.3s ease;
+        }
+
+        .back-button:hover {
+            color: #ccc;
+            transform: translateX(-5px);
+        }
+
+        .project-title {
+            font-size: 3rem;
+            font-weight: 300;
+            letter-spacing: 3px;
+            margin-bottom: 20px;
+            background: linear-gradient(45deg, #fff, #ccc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* Main Content */
+        .main-content {
+            padding: 80px 0;
+            background: #fff;
+            color: #000;
+        }
+
+        .project-image {
+            width: 100%;
+            height: 400px;
+            background-image: url('https://raw.githubusercontent.com/mayo0813/portfolio/main/you%20are%20finally%20here.png');
+            background-size: cover;
+            background-position: center;
+            border-radius: 12px;
+            margin-bottom: 60px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+
+        .statement-section {
+            margin-bottom: 60px;
+        }
+
+        .section-title {
+            font-size: 1.8rem;
+            font-weight: 300;
+            margin-bottom: 30px;
+            color: #333;
+            letter-spacing: 1px;
+        }
+
+        .statement-text {
+            font-size: 1.1rem;
+            line-height: 2;
+            color: #555;
+            margin-bottom: 30px;
+        }
+
+        .play-section {
+            text-align: center;
+            padding: 60px 0;
+            background: #f8f8f8;
+            border-radius: 12px;
+        }
+
+        .play-button {
+            display: inline-block;
+            padding: 20px 50px;
+            background: #000;
+            color: #fff;
+            text-decoration: none;
+            font-weight: 500;
+            letter-spacing: 2px;
+            transition: all 0.3s ease;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            margin-top: 20px;
+        }
+
+        .play-button:hover {
+            background: #333;
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .project-title {
+                font-size: 2rem;
+            }
+            
+            .back-button {
+                left: 20px;
+                top: 20px;
+            }
+            
+            .container {
+                padding: 0 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <a href="javascript:history.back()" class="back-button">←</a>
+        <div class="container">
+            <h1 class="project-title">You Are Finally Here</h1>
+        </div>
+    </header>
+
+    <section class="main-content">
+        <div class="container">
+            <div class="project-image"></div>
+            
+            <div class="statement-section">
+                <p class="statement-text">
+                    '같은 것의 테러'가 일어나고 있다. 디지털 세상에서 우리는 다양한 종류의 사람들을 만나리라 기대했지만 오히려 좋아요를 통해 우리는 우리를 닮은 이들만 만나게 된다. 인터넷을 통한 과잉소통은 오히려 낯섦을 제거하지만, 바로 그 낯섦이야말로 우리 행동의 동기이자 영감의 원천이다. 그러나 오늘날은 다름에 경기를 일으키는 것 같다.
+                </p>
+                <p class="statement-text">
+                    우리는 타자를 존중하기보다는 누군가를 삼키려한다. 자신과 같은 것으로 만드려고 한다. 그러나 우리는 타자를 영원히 소유할 수 없다.
+                </p>
+                <p class="statement-text">
+                    게임 속에서 좋아요를 수집하게 되면 '우리'를 만날 수 있게 된다. '우리'는 밝게 빛나서 타자보다 접근하기 쉽다. '우리'와 달리 타자는 온전하게 보이지 않는다. 글리치, 오류로 보인다. 타자와 부딪히게 되면 나에게 글리치가 옮는다. 이는 화면에 글리치가 보이는 것으로 나타난다. 때문에 게임은 타자와의 접촉을 최대한 피하도록 한다. 타자와 4번 마주치면 GAMEOVER가 뜨면서 'you are absorbed by THEM'이라는 문구가 뜬다. 그러나 '우리'와의 4번 마주침 이후에도 'GAMEOVER..?'이 뜬다. 진짜 게임오버는 타자와의 만남일까, 아니면 '우리'라는 안전한 울타리 안에 갇히는 것일까?
+                </p>
+            </div>
+
+            <div class="play-section">
+                <a href="https://mayo0813.github.io/youarefinallyhere_/" target="_blank" class="play-button">
+                    PLAY
+                </a>
+            </div>
+        </div>
+    </section>
+</body>
+</html>
