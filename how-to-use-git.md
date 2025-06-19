@@ -1,10 +1,13 @@
 # git 사용법
 
-1. git add . && git commit -m '메세지'
+1. git pull
+- 앞서 작업된 내용 가져오기
+
+2. git add . && git commit -m '메세지'
 - 현재 작업한 내용을 저장함.
 - 메세지는 지금은 아무렇게나 입력해도 괜찮음
 
-2. git push
+3. git push
 - 저장한 내용을 github에 올림
 
 이 과정이 끝나면 배포된 페이지 내용이 수정됩니다.
