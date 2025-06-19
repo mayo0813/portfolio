@@ -1,0 +1,955 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>핑퐁 게임</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: black;
+            color: white;
+            font-family: monospace;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .game-grid {
+            display: grid;
+            grid-template-columns: repeat(10, 1fr);
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+            max-width: 90vw;
+        }
+        
+        .game-option {
+            width: 50px;
+            height: 50px;
+            border: 2px solid white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            background-color: black;
+            overflow: hidden;
+        }
+        
+        .game-option img {
+            width: 90%;
+            height: 90%;
+            object-fit: contain;
+        }
+        
+        .start-button {
+            border: 2px solid white;
+            padding: 0.5rem;
+            width: 8rem;
+            text-align: center;
+            cursor: pointer;
+        }
+        
+        canvas {
+            border: 2px solid white;
+        }
+        
+        .message {
+            font-size: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .buttons {
+            display: flex;
+            gap: 2rem;
+        }
+        
+        .button {
+            border: 2px solid white;
+            padding: 0.5rem;
+            width: 8rem;
+            text-align: center;
+            cursor: pointer;
+        }
+        
+        .fail-counter {
+            margin-bottom: 1rem;
+        }
+        
+        .gamepad-info {
+            position: fixed;
+            bottom: 10px;
+            left: 10px;
+            background-color: rgba(0, 0, 0, 0.8);
+            border: 1px solid #00ff00;
+            padding: 10px;
+            font-size: 14px;
+            border-radius: 4px;
+            z-index: 100;
+        }
+        
+        .gamepad-status {
+            color: #ff0000;
+        }
+        
+        .gamepad-status.connected {
+            color: #00ff00;
+        }
+    </style>
+</head>
+<body>
+    <div class="container" id="app">
+        <!-- 게임 내용은 JavaScript로 여기에 렌더링됩니다 -->
+    </div>
+    
+    <div class="gamepad-info">
+        <div id="gamepadStatus" class="gamepad-status">게임패드: 연결되지 않음</div>
+        <div style="margin-top: 5px;">
+            <p><strong>조작법:</strong></p>
+            <p>Player 1: 방향키 (이동)</p>
+            <p>Player 2: W,S 키 (이동)</p>
+            <p>게임패드: 방향키/아날로그 스틱, A버튼 (확인)</p>
+        </div>
+    </div>
+
+    <script>
+        // 게임 상태와 변수들
+        const game = {
+            state: 'start', // start, playing, fail, needSomeone, gameOver, youWin
+            selectedGame: 0,
+            failCount: 0,
+            player2Mode: null, // null, 'human', 'mirror'
+            score: { player1: 0, player2: 0 },
+            paddle1: { y: 50, height: 15 },
+            paddle2: { y: 50, height: 15 },
+            ball: { x: 50, y: 50, dx: 0.8, dy: 0.4, size: 2 },
+            keys: { ArrowUp: false, ArrowDown: false, ArrowLeft: false, ArrowRight: false, w: false, s: false, Enter: false },
+            animationId: null,
+            lastTime: 0,
+            // 게임패드 관련 변수
+            gamepad: {
+                connected: false,
+                selectedOption: 0,
+                buttonPressed: {
+                    a: false,
+                    b: false,
+                    up: false,
+                    down: false,
+                    left: false,
+                    right: false
+                },
+                lastButtonState: {
+                    a: false,
+                    b: false,
+                    up: false,
+                    down: false,
+                    left: false,
+                    right: false
+                }
+            },
+            // 게임 상태 변경 추적을 위한 변수 추가
+            isTransitioning: false
+        };
+
+        // DOM 요소
+        const app = document.getElementById('app');
+        const gamepadStatus = document.getElementById('gamepadStatus');
+        
+        // 디버깅을 위한 함수 - 게임 상태 콘솔에 출력
+        function logGameState(message) {
+            console.log(message, 
+                "State:", game.state, 
+                "Player2Mode:", game.player2Mode, 
+                "Scores:", game.score, 
+                "FailCount:", game.failCount,
+                "Transitioning:", game.isTransitioning
+            );
+        }
+        
+        // 게임 초기화
+        function init() {
+            console.log("게임 초기화");
+            setupKeyboardListeners();
+            setupGamepadListeners();
+            startGamepadPolling();
+            renderCurrentScreen();
+        }
+        
+        // 현재 상태에 맞는 화면 렌더링
+        function renderCurrentScreen() {
+            // 이미 화면 전환 중이면 무시
+            if (game.isTransitioning) {
+                console.log("화면 전환 중, 중복 렌더링 무시");
+                return;
+            }
+            
+            game.isTransitioning = true;
+            app.innerHTML = '';
+            logGameState("화면 렌더링");
+            
+            switch (game.state) {
+                case 'start':
+                    renderStartScreen();
+                    break;
+                case 'playing':
+                    renderGameScreen();
+                    startGameLoop();
+                    break;
+                case 'fail':
+                    renderFailScreen();
+                    break;
+                case 'needSomeone':
+                    renderNeedSomeoneScreen();
+                    break;
+                case 'gameOver':
+                    renderGameOverScreen();
+                    break;
+                case 'youWin':
+                    renderYouWinScreen();
+                    break;
+            }
+            
+            // 화면 전환 완료
+            game.isTransitioning = false;
+        }
+        
+        // 시작 화면
+        function renderStartScreen() {
+            console.log("시작 화면 렌더링");
+            
+            let html = '';
+            
+            if (game.failCount > 0) {
+                html += `<div class="fail-counter">Fails: ${game.failCount}/3</div>`;
+            }
+            
+            html += '<div class="game-grid">';
+            
+            // 50개의 빈 네모 생성
+            for (let i = 0; i < 50; i++) {
+                const isSelected = i === game.gamepad.selectedOption && game.state === 'start';
+                const borderColor = isSelected ? '#00ff00' : 'white';
+                
+                html += `
+                    <div class="game-option" data-index="${i}" style="border-color: ${borderColor}"></div>
+                `;
+            }
+            
+            html += '</div>';
+            
+            html += '<div style="margin-top: 20px; text-align: center; font-size: 16px;">방향키로 선택, Enter 또는 A 버튼으로 시작</div>';
+            
+            app.innerHTML = html;
+            
+            // 게임 선택 이벤트 리스너
+            document.querySelectorAll('.game-option').forEach(option => {
+                option.addEventListener('click', () => {
+                    const index = parseInt(option.getAttribute('data-index'));
+                    handleGameSelect(index);
+                });
+            });
+        }
+        
+        // 게임 화면
+        function renderGameScreen() {
+            console.log("게임 화면 렌더링");
+            
+            app.innerHTML = '<canvas id="gameCanvas" width="800" height="600"></canvas>';
+            
+            // 2인 플레이어 모드이고 human 모드일 때만 조작 설명 추가
+            if (game.player2Mode === 'human') {
+                app.innerHTML += `
+                    <div style="margin-top: 10px; text-align: center; font-size: 16px;">
+                        <p>Player 1: 방향키로 이동</p>
+                        <p>Player 2: W,S 키로 이동</p>
+                    </div>
+                `;
+            }
+            
+            resetBall();
+        }
+        
+        // Fail 화면
+        function renderFailScreen() {
+            console.log("실패 화면 렌더링, 현재 실패 횟수:", game.failCount);
+            
+            app.innerHTML = `
+                <div class="message">FAIL</div>
+                <div class="button" id="restartButton">RESTART</div>
+            `;
+            
+            document.getElementById('restartButton').addEventListener('click', handleRestart);
+            
+            // 3번 실패 시 즉시 Need Someone 화면으로 전환 (지연 없이)
+            if (game.failCount >= 3) {
+                console.log("3번 실패로 NEED SOMEONE 화면으로 즉시 전환");
+                game.state = 'needSomeone';
+                renderCurrentScreen();
+            }
+        }
+        
+        // Need Someone 화면
+        function renderNeedSomeoneScreen() {
+            console.log("NEED SOMEONE 화면 렌더링");
+            
+            app.innerHTML = `
+                <div class="message">NEED SOMEONE?</div>
+                <div class="buttons">
+                    <div class="button" id="yesButton" style="border-color: #00ff00;">YES</div>
+                    <div class="button" id="noButton">NO</div>
+                </div>
+            `;
+            
+            // YES/NO 버튼 이벤트
+            document.getElementById('yesButton').addEventListener('click', () => {
+                console.log("YES 버튼 클릭");
+                handleNeedSomeoneResponse('yes');
+            });
+            
+            document.getElementById('noButton').addEventListener('click', () => {
+                console.log("NO 버튼 클릭");
+                handleNeedSomeoneResponse('no');
+            });
+            
+            // 키보드 이벤트 추가 - 왼쪽/오른쪽 방향키로 YES/NO 선택
+            const handleKeydown = (e) => {
+                if (game.state !== 'needSomeone') return;
+                
+                if (e.key === 'ArrowLeft') {
+                    console.log("왼쪽 화살표 - YES 선택");
+                    // YES 버튼 하이라이트
+                    document.getElementById('yesButton').style.borderColor = '#00ff00';
+                    document.getElementById('noButton').style.borderColor = 'white';
+                    game.gamepad.selectedOption = 0;
+                } else if (e.key === 'ArrowRight') {
+                    console.log("오른쪽 화살표 - NO 선택");
+                    // NO 버튼 하이라이트
+                    document.getElementById('yesButton').style.borderColor = 'white';
+                    document.getElementById('noButton').style.borderColor = '#00ff00';
+                    game.gamepad.selectedOption = 1;
+                } else if (e.key === 'Enter') {
+                    // Enter키로 선택
+                    const choice = game.gamepad.selectedOption === 0 ? 'yes' : 'no';
+                    handleNeedSomeoneResponse(choice);
+                }
+            };
+            
+            window.addEventListener('keydown', handleKeydown);
+            
+            // Need Someone 화면에서 기본 선택 옵션 설정
+            game.gamepad.selectedOption = 0; // YES 기본 선택
+        }
+        
+        // Game Over 화면
+        function renderGameOverScreen() {
+            const winner = game.score.player1 >= 3 ? 'Player 1' : 'Player 2';
+            console.log("게임 오버 화면 렌더링 - 승자:", winner, "점수:", game.score);
+            
+            app.innerHTML = `
+                <div class="message">GAME OVER</div>
+                <div class="message">${winner} WINS!</div>
+                <div class="button" id="restartButton">RESTART</div>
+            `;
+            
+            document.getElementById('restartButton').addEventListener('click', handleRestart);
+        }
+        
+        // You Win 화면
+        function renderYouWinScreen() {
+            console.log("YOU WIN 화면 렌더링 함수 실행됨");
+            
+            app.innerHTML = `
+                <div class="message">YOU WIN!</div>
+                <div class="message">Congratulations!</div>
+                <div class="button" id="restartButton">RESTART</div>
+            `;
+            
+            document.getElementById('restartButton').addEventListener('click', handleRestart);
+        }
+        
+        // 키보드 입력 처리
+        function setupKeyboardListeners() {
+            window.addEventListener('keydown', (e) => {
+                if (e.key in game.keys) {
+                    game.keys[e.key] = true;
+                }
+                
+                // 게임 상태가 start일 때 방향키 네비게이션
+                if (game.state === 'start') {
+                    handleMenuNavigation(e.key);
+                }
+                
+                // Enter 키로 선택
+                if (e.key === 'Enter') {
+                    handleKeyboardSelect();
+                }
+            });
+            
+            window.addEventListener('keyup', (e) => {
+                if (e.key in game.keys) {
+                    game.keys[e.key] = false;
+                }
+            });
+        }
+        
+        // 메뉴 네비게이션
+        function handleMenuNavigation(key) {
+            const rowCount = 5; // 5행
+            const colCount = 10; // 10열
+            
+            switch(key) {
+                case 'ArrowUp':
+                    if (game.gamepad.selectedOption >= colCount) {
+                        game.gamepad.selectedOption -= colCount;
+                    }
+                    break;
+                case 'ArrowDown':
+                    if (game.gamepad.selectedOption < 40) {
+                        game.gamepad.selectedOption += colCount;
+                    }
+                    break;
+                case 'ArrowLeft':
+                    if (game.gamepad.selectedOption % colCount > 0) {
+                        game.gamepad.selectedOption--;
+                    }
+                    break;
+                case 'ArrowRight':
+                    if (game.gamepad.selectedOption % colCount < colCount - 1) {
+                        game.gamepad.selectedOption++;
+                    }
+                    break;
+            }
+            
+            renderCurrentScreen();
+        }
+        
+        // 키보드 선택 처리
+        function handleKeyboardSelect() {
+            if (game.state === 'start') {
+                if (game.gamepad.selectedOption < 50) {
+                    handleGameSelect(game.gamepad.selectedOption);
+                }
+            }
+        }
+        
+        // 게임패드 연결/해제 리스너 설정
+        function setupGamepadListeners() {
+            window.addEventListener('gamepadconnected', (e) => {
+                console.log("게임패드 연결됨:", e.gamepad.id);
+                game.gamepad.connected = true;
+                updateGamepadStatus(true, e.gamepad.id);
+            });
+            
+            window.addEventListener('gamepaddisconnected', (e) => {
+                console.log("게임패드 연결 해제됨:", e.gamepad.id);
+                game.gamepad.connected = false;
+                updateGamepadStatus(false);
+            });
+        }
+        
+        // 게임패드 상태 업데이트
+        function updateGamepadStatus(connected, gamepadId = '') {
+            if (connected) {
+                gamepadStatus.textContent = `게임패드: 연결됨 (${gamepadId.substring(0, 20)}${gamepadId.length > 20 ? '...' : ''})`;
+                gamepadStatus.classList.add('connected');
+            } else {
+                gamepadStatus.textContent = '게임패드: 연결되지 않음';
+                gamepadStatus.classList.remove('connected');
+            }
+        }
+        
+        // 게임패드 상태 폴링
+        function startGamepadPolling() {
+            setInterval(pollGamepads, 16.6);
+        }
+        
+        // 게임패드 상태 확인
+        function pollGamepads() {
+            const gamepads = navigator.getGamepads ? navigator.getGamepads() : [];
+            let activeGamepad = null;
+            
+            // 연결된 게임패드 찾기
+            for (let i = 0; i < gamepads.length; i++) {
+                if (gamepads[i]) {
+                    activeGamepad = gamepads[i];
+                    if (!game.gamepad.connected) {
+                        game.gamepad.connected = true;
+                        updateGamepadStatus(true, activeGamepad.id);
+                    }
+                    break;
+                }
+            }
+            
+            if (!activeGamepad) {
+                if (game.gamepad.connected) {
+                    game.gamepad.connected = false;
+                    updateGamepadStatus(false);
+                }
+                return;
+            }
+            
+            // 게임패드 버튼 상태
+            const buttonState = {
+                a: activeGamepad.buttons[0].pressed,
+                b: activeGamepad.buttons[1].pressed,
+                up: activeGamepad.buttons[12].pressed || (activeGamepad.axes[1] < -0.5),
+                down: activeGamepad.buttons[13].pressed || (activeGamepad.axes[1] > 0.5),
+                left: activeGamepad.buttons[14].pressed || (activeGamepad.axes[0] < -0.5),
+                right: activeGamepad.buttons[15].pressed || (activeGamepad.axes[0] > 0.5)
+            };
+            
+            // 버튼 눌림 감지 (이전 상태와 비교)
+            const buttonPressed = {
+                a: buttonState.a && !game.gamepad.lastButtonState.a,
+                b: buttonState.b && !game.gamepad.lastButtonState.b,
+                up: buttonState.up && !game.gamepad.lastButtonState.up,
+                down: buttonState.down && !game.gamepad.lastButtonState.down,
+                left: buttonState.left && !game.gamepad.lastButtonState.left,
+                right: buttonState.right && !game.gamepad.lastButtonState.right
+            };
+            
+            // 버튼 상태 저장
+            game.gamepad.buttonPressed = buttonPressed;
+            game.gamepad.lastButtonState = buttonState;
+            
+            // 상태별 게임패드 입력 처리
+            handleGamepadInput(buttonState, buttonPressed);
+        }
+        
+        // 게임패드 입력 처리
+        function handleGamepadInput(buttonState, buttonPressed) {
+            // 화면 전환 중이면 입력 무시
+            if (game.isTransitioning) {
+                return;
+            }
+            
+            switch (game.state) {
+                case 'start':
+                    // 메뉴 이동
+                    const colCount = 10; // 열 개수
+                    
+                    if (buttonPressed.up) {
+                        if (game.gamepad.selectedOption >= colCount) {
+                            game.gamepad.selectedOption -= colCount;
+                        }
+                        renderCurrentScreen();
+                    } else if (buttonPressed.down) {
+                        if (game.gamepad.selectedOption < 40) {
+                            game.gamepad.selectedOption += colCount;
+                        }
+                        renderCurrentScreen();
+                    } else if (buttonPressed.left) {
+                        if (game.gamepad.selectedOption % colCount > 0) {
+                            game.gamepad.selectedOption--;
+                        }
+                        renderCurrentScreen();
+                    } else if (buttonPressed.right) {
+                        if (game.gamepad.selectedOption % colCount < colCount - 1) {
+                            game.gamepad.selectedOption++;
+                        }
+                        renderCurrentScreen();
+                    } else if (buttonPressed.a) {
+                        // 게임 선택
+                        const index = game.gamepad.selectedOption;
+                        handleGameSelect(index);
+                    }
+                    break;
+                    
+                case 'playing':
+                    // 패들 이동
+                    game.keys.ArrowUp = buttonState.up;
+                    game.keys.ArrowDown = buttonState.down;
+                    break;
+                    
+                case 'needSomeone':
+                    if (buttonPressed.left) {
+                        console.log("게임패드 왼쪽 - YES 선택");
+                        // YES 버튼 하이라이트
+                        document.getElementById('yesButton').style.borderColor = '#00ff00';
+                        document.getElementById('noButton').style.borderColor = 'white';
+                        game.gamepad.selectedOption = 0;
+                    } else if (buttonPressed.right) {
+                        console.log("게임패드 오른쪽 - NO 선택");
+                        // NO 버튼 하이라이트
+                        document.getElementById('yesButton').style.borderColor = 'white';
+                        document.getElementById('noButton').style.borderColor = '#00ff00';
+                        game.gamepad.selectedOption = 1;
+                    } else if (buttonPressed.a) {
+                        // A 버튼으로 선택
+                        const choice = game.gamepad.selectedOption === 0 ? 'yes' : 'no';
+                        console.log("게임패드 A 버튼 - 선택:", choice);
+                        handleNeedSomeoneResponse(choice);
+                    }
+                    break;
+                    
+                case 'fail':
+                case 'gameOver':
+                case 'youWin':
+                    if (buttonPressed.a) {
+                        handleRestart();
+                    }
+                    break;
+            }
+        }
+        
+        // 게임 루프
+        function gameLoop(timestamp) {
+            if (!game.lastTime) {
+                game.lastTime = timestamp;
+            }
+            
+            const deltaTime = timestamp - game.lastTime;
+            game.lastTime = timestamp;
+            
+            // 게임 플레이 중이 아니면 루프 종료
+            if (game.state !== 'playing') {
+                return;
+            }
+            
+            // 게임 중 승리 조건 체크 (3점)
+            if (game.player2Mode !== null && (game.score.player1 >= 3 || game.score.player2 >= 3)) {
+                console.log("게임 루프에서 승리 조건 감지:", game.score);
+                
+                // 승리 조건 확인 통합 - 한 곳에서만 처리
+                checkWinCondition();
+                return;
+            }
+            
+            updatePaddles(deltaTime);
+            updateBall(deltaTime);
+            drawGame();
+            
+            // 다음 프레임 요청
+            game.animationId = requestAnimationFrame(gameLoop);
+        }
+        
+        // 승리 조건 확인 - 통합된 함수
+        function checkWinCondition() {
+            // 애니메이션 프레임 취소
+            if (game.animationId) {
+                cancelAnimationFrame(game.animationId);
+                game.animationId = null;
+            }
+            
+            if (game.player2Mode === 'mirror') {
+                console.log("미러 모드 승리 조건 충족");
+                game.state = 'youWin';
+            } else {
+                console.log("2인 모드 승리 조건 충족");
+                game.state = 'gameOver';
+            }
+            
+            // 화면 즉시 갱신
+            renderCurrentScreen();
+        }
+        
+        // 게임 루프 시작
+        function startGameLoop() {
+            if (game.animationId) {
+                cancelAnimationFrame(game.animationId);
+                game.animationId = null;
+            }
+            
+            game.lastTime = 0;
+            game.animationId = requestAnimationFrame(gameLoop);
+        }
+        
+        // 패들 업데이트
+        function updatePaddles(deltaTime) {
+            const paddleSpeed = 0.5 * deltaTime / 10;
+            const maxPaddleY = 100 - game.paddle1.height;
+            
+            // 플레이어 1 패들 이동
+            if (game.keys.ArrowUp) {
+                game.paddle1.y = Math.max(0, game.paddle1.y - paddleSpeed);
+            }
+            
+            if (game.keys.ArrowDown) {
+                game.paddle1.y = Math.min(maxPaddleY, game.paddle1.y + paddleSpeed);
+            }
+            
+            // 플레이어 2 패들 이동
+            if (game.player2Mode === 'human') {
+                if (game.keys.w) {
+                    game.paddle2.y = Math.max(0, game.paddle2.y - paddleSpeed);
+                }
+                
+                if (game.keys.s) {
+                    game.paddle2.y = Math.min(maxPaddleY, game.paddle2.y + paddleSpeed);
+                }
+            } else if (game.player2Mode === 'mirror') {
+                game.paddle2.y = game.paddle1.y;
+            }
+        }
+        
+        // 공 업데이트
+        function updateBall(deltaTime) {
+            const speedMultiplier = deltaTime / 10;
+            let newX = game.ball.x + game.ball.dx * speedMultiplier;
+            let newY = game.ball.y + game.ball.dy * speedMultiplier;
+            
+            // 상하 벽 충돌
+            if (newY <= 0 || newY + game.ball.size >= 100) {
+                game.ball.dy = -game.ball.dy;
+                newY = newY <= 0 ? 0 : 100 - game.ball.size;
+            }
+            
+            // 패들 위치 계산
+            const paddleWidth = 1;
+            const leftPaddleRight = 5;
+            const rightPaddleLeft = 95 - paddleWidth;
+            
+            // 왼쪽 패들 충돌
+            if (newX <= leftPaddleRight && 
+                game.ball.x > leftPaddleRight && 
+                newY + game.ball.size >= game.paddle1.y && 
+                newY <= game.paddle1.y + game.paddle1.height) {
+                
+                game.ball.dx = Math.abs(game.ball.dx); // 오른쪽으로 방향 전환
+                
+                // 충돌 위치에 따른 Y속도 조정
+                const hitPos = (newY + game.ball.size / 2) - (game.paddle1.y + game.paddle1.height / 2);
+                game.ball.dy = hitPos * 0.03;
+                
+                newX = leftPaddleRight;
+            }
+            
+            // 오른쪽 패들 충돌 (있는 경우만)
+            if (game.player2Mode !== null && 
+                newX + game.ball.size >= rightPaddleLeft && 
+                game.ball.x + game.ball.size < rightPaddleLeft && 
+                newY + game.ball.size >= game.paddle2.y && 
+                newY <= game.paddle2.y + game.paddle2.height) {
+                
+                game.ball.dx = -Math.abs(game.ball.dx); // 왼쪽으로 방향 전환
+                
+                // 충돌 위치에 따른 Y속도 조정
+                const hitPos = (newY + game.ball.size / 2) - (game.paddle2.y + game.paddle2.height / 2);
+                game.ball.dy = hitPos * 0.03;
+                
+                newX = rightPaddleLeft - game.ball.size;
+            }
+            
+            // 좌우 벽 충돌 (골인)
+            if (newX < 0) {
+                // 왼쪽 골인 - 플레이어 1 실패
+                console.log("공이 왼쪽 벽에 충돌 - 플레이어 1 실패");
+                handleFail('player1');
+                return;
+            }
+            
+            if (newX + game.ball.size > 100) {
+                // 오른쪽 골인
+                if (game.player2Mode === null) {
+                    // 상대가 없는 경우 실패로 처리
+                    console.log("공이 오른쪽 벽에 충돌 (상대 없음) - 플레이어 1 실패");
+                    handleFail('player1');
+                } else {
+                    // 상대가 있는 경우 플레이어 2 실패
+                    console.log("공이 오른쪽 벽에 충돌 - 플레이어 2 실패");
+                    handleFail('player2');
+                }
+                return;
+            }
+            
+            // 공 위치 업데이트
+            game.ball.x = newX;
+            game.ball.y = newY;
+        }
+        
+        // 게임 그리기
+        function drawGame() {
+            const canvas = document.getElementById('gameCanvas');
+            if (!canvas) return;
+            
+            const ctx = canvas.getContext('2d');
+            const width = canvas.width;
+            const height = canvas.height;
+            
+            // 배경 그리기
+            ctx.fillStyle = 'black';
+            ctx.fillRect(0, 0, width, height);
+            
+            // 중앙선 그리기
+            ctx.fillStyle = 'white';
+            ctx.fillRect(width / 2 - 0.5, 0, 1, height);
+            
+            // 패들 그리기
+            const paddleWidth = width * 0.01;
+            
+            // 왼쪽 패들
+            ctx.fillRect(
+                width * 0.05 - paddleWidth, 
+                height * game.paddle1.y / 100, 
+                paddleWidth, 
+                height * game.paddle1.height / 100
+            );
+            
+            // 오른쪽 패들 (상대가 있는 경우만)
+            if (game.player2Mode !== null) {
+                ctx.fillRect(
+                    width * 0.95, 
+                    height * game.paddle2.y / 100, 
+                    paddleWidth, 
+                    height * game.paddle2.height / 100
+                );
+            }
+            
+            // 공 그리기
+            ctx.fillRect(
+                width * game.ball.x / 100, 
+                height * game.ball.y / 100, 
+                width * game.ball.size / 100, 
+                height * game.ball.size / 100
+            );
+            
+            // 점수 그리기 (상대가 있는 경우만)
+            if (game.player2Mode !== null) {
+                ctx.font = '40px monospace';
+                ctx.textAlign = 'center';
+                ctx.fillText(game.score.player1, width * 0.25, 50);
+                ctx.fillText(game.score.player2, width * 0.75, 50);
+            }
+        }
+        
+        // 게임 선택
+        function handleGameSelect(index) {
+            console.log("게임 선택:", index);
+            game.selectedGame = index;
+            game.state = 'playing';
+            game.score = { player1: 0, player2: 0 };
+            renderCurrentScreen();
+        }
+        
+        // 실패 처리
+        function handleFail(player) {
+            console.log("실패 처리 - 플레이어:", player, "현재 모드:", game.player2Mode);
+            
+            // 애니메이션 중단
+            if (game.animationId) {
+                cancelAnimationFrame(game.animationId);
+                game.animationId = null;
+            }
+            
+            if (game.player2Mode === null) {
+                // 1인 모드 - 실패 카운트 증가
+                game.failCount++;
+                console.log("실패 횟수 증가:", game.failCount);
+                
+                if (game.failCount >= 3) {
+                    console.log("3번 실패 - NEED SOMEONE 화면으로 즉시 전환");
+                    game.state = 'needSomeone';
+                } else {
+                    console.log("실패 화면으로 전환");
+                    game.state = 'fail';
+                }
+            } else {
+                // 2인 모드 - 점수 증가
+                if (player === 'player1') {
+                    game.score.player2++;
+                    console.log("플레이어 2 득점:", game.score.player2);
+                } else {
+                    game.score.player1++;
+                    console.log("플레이어 1 득점:", game.score.player1);
+                }
+                
+                // 승리 조건 확인 (3점)
+                if (game.score.player1 >= 3 || game.score.player2 >= 3) {
+                    // 통합된 승리 조건 체크 함수 호출
+                    checkWinCondition();
+                    return;
+                } else {
+                    // 점수가 3점 미만 - 공 위치 초기화 후 계속
+                    resetBall();
+                    // 게임 루프 다시 시작
+                    startGameLoop();
+                    return;
+                }
+            }
+            
+            // 화면 즉시 갱신 (setTimeout 사용하지 않음)
+            renderCurrentScreen();
+        }
+        
+        // 게임 재시작
+        function handleRestart() {
+            console.log("게임 재시작");
+            
+            // 애니메이션 중단
+            if (game.animationId) {
+                cancelAnimationFrame(game.animationId);
+                game.animationId = null;
+            }
+            
+            game.state = 'start';
+            game.selectedGame = 0;
+            game.gamepad.selectedOption = 0;
+            
+            if (game.player2Mode !== null) {
+                game.failCount = 0;
+                game.player2Mode = null;
+            }
+            
+            game.score = { player1: 0, player2: 0 };
+            
+            // 화면 즉시 갱신
+            renderCurrentScreen();
+        }
+        
+        // Need Someone 응답
+        function handleNeedSomeoneResponse(response) {
+            console.log("NEED SOMEONE 응답:", response);
+            
+            if (response === 'yes') {
+                console.log("YES 선택 - 인간 모드 설정");
+                game.player2Mode = 'human';
+            } else {
+                console.log("NO 선택 - 미러 모드 설정");
+                game.player2Mode = 'mirror';
+            }
+            
+            game.state = 'playing';
+            game.failCount = 0;
+            game.score = { player1: 0, player2: 0 };
+            
+            console.log("게임 시작 - 모드:", game.player2Mode);
+            
+            // 화면 즉시 갱신
+            renderCurrentScreen();
+        }
+        
+        // 공 초기화
+        function resetBall() {
+            game.ball = { 
+                x: 50, 
+                y: 50, 
+                dx: 0.8, // 빠른 공 속도
+                dy: 0.4 * (Math.random() - 0.5), // 랜덤 각도
+                size: 2 
+            };
+            
+            console.log("공 위치 초기화");
+        }
+        
+        // 이미지 로드 에러 처리
+        window.addEventListener('error', function(e) {
+            if (e.target.tagName === 'IMG') {
+                console.log('이미지 로드 실패:', e.target.src);
+                e.target.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect width="100%" height="100%" fill="black"/><text x="50%" y="50%" font-family="monospace" font-size="20" fill="white" text-anchor="middle" dominant-baseline="middle">이미지</text></svg>';
+            }
+        }, true);
+        
+        // 게임 시작
+        init();
+    </script>
+</body>
+</html>
