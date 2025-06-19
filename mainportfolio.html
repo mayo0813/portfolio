@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>박선영 Portfolio</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: #fff;
+            color: #000;
+            line-height: 1.6;
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 200px;
+            background: #fff;
+            border-right: 1px solid #ddd;
+            padding: 20px;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+        }
+
+        .sidebar-header {
+            margin-bottom: 30px;
+        }
+
+        .site-title {
+            font-size: 1rem;
+            font-weight: normal;
+            margin-bottom: 10px;
+        }
+
+        .year-section {
+            margin-bottom: 25px;
+        }
+
+        .year-title {
+            font-size: 0.9rem;
+            color: #999;
+            margin-bottom: 8px;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .year-title:hover {
+            color: #000;
+        }
+
+        .work-list {
+            list-style: none;
+            margin-left: 10px;
+        }
+
+        .work-item {
+            margin-bottom: 3px;
+        }
+
+        .work-link {
+            font-size: 0.85rem;
+            color: #666;
+            text-decoration: none;
+            cursor: pointer;
+            display: block;
+            padding: 2px 0;
+        }
+
+        .work-link:hover,
+        .work-link.active {
+            color: #000;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 200px;
+            flex: 1;
+            padding: 40px;
+            min-height: 100vh;
+        }
+
+        .content-area {
+            max-width: 800px;
+        }
+
+        .work-images {
+            display: none;
+            margin-bottom: 30px;
+        }
+
+        .work-images.active {
+            display: block;
+        }
+
+        .image-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .work-image {
+            width: 100%;
+            height: auto;
+            border: 1px solid #eee;
+            display: block;
+        }
+
+        .work-info {
+            font-size: 0.9rem;
+            line-height: 1.8;
+        }
+
+        .work-title-main {
+            font-style: italic;
+            margin-bottom: 5px;
+        }
+
+        .work-year {
+            margin-bottom: 5px;
+        }
+
+        .work-materials {
+            color: #666;
+            margin-bottom: 15px;
+        }
+
+        .play-button {
+            display: inline-block;
+            padding: 8px 20px;
+            background: #000;
+            color: #fff;
+            text-decoration: none;
+            font-size: 0.8rem;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+
+        .play-button:hover {
+            background: #333;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+                border-right: none;
+                border-bottom: 1px solid #ddd;
+            }
+            
+            .main-content {
+                margin-left: 0;
+                padding: 20px;
+            }
+            
+            .image-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Custom images */
+        .exhibitionism-img {
+            background-image: url('https://raw.githubusercontent.com/mayo0813/portfolio/main/exhibitionism.png');
+        }
+        
+        .youarefinallyhere-img {
+            background-image: url('https://raw.githubusercontent.com/mayo0813/portfolio/main/you%20are%20finally%20here.png');
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <div class="site-title">박선영</div>
+        </div>
+
+        <div class="year-section">
+            <div class="year-title" onclick="toggleYear('2025')">∴2025</div>
+            <ul class="work-list" id="year-2025">
+                <li class="work-item">
+                    <a href="#" class="work-link" onclick="showWork('exhibitionism', this)">Exhibitionism</a>
+                </li>
+                <li class="work-item">
+                    <a href="#" class="work-link" onclick="showWork('youarefinallyhere', this)">You Are Finally Here</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="content-area">
+            <!-- Exhibitionism Work -->
+            <div class="work-images" id="exhibitionism">
+                <div class="image-grid">
+                    <img src="https://raw.githubusercontent.com/mayo0813/portfolio/main/exhibitionism.png" alt="Exhibitionism" class="work-image">
+                </div>
+                <div class="work-info">
+                    <div class="work-title-main">Exhibitionism</div>
+                    <div class="work-year">2025</div>
+                    <div class="work-materials">Interactive Web Experience</div>
+                    <a href="https://mayo0813.github.io/exhibitionism/" target="_blank" class="play-button">PLAY</a>
+                </div>
+            </div>
+
+            <!-- You Are Finally Here Work -->
+            <div class="work-images" id="youarefinallyhere">
+                <div class="image-grid">
+                    <img src="https://raw.githubusercontent.com/mayo0813/portfolio/main/you%20are%20finally%20here.png" alt="You Are Finally Here" class="work-image">
+                </div>
+                <div class="work-info">
+                    <div class="work-title-main">You Are Finally Here</div>
+                    <div class="work-year">2025</div>
+                    <div class="work-materials">3D Interactive Game</div>
+                    <a href="https://mayo0813.github.io/youarefinallyhere_/" target="_blank" class="play-button">PLAY</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleYear(year) {
+            const yearList = document.getElementById('year-' + year);
+            if (yearList.style.display === 'none') {
+                yearList.style.display = 'block';
+            } else {
+                yearList.style.display = 'none';
+            }
+        }
+
+        function showWork(workId, linkElement) {
+            // Hide all work displays
+            const allWorks = document.querySelectorAll('.work-images');
+            allWorks.forEach(work => work.classList.remove('active'));
+            
+            // Remove active class from all links
+            const allLinks = document.querySelectorAll('.work-link');
+            allLinks.forEach(link => link.classList.remove('active'));
+            
+            // Show selected work
+            const selectedWork = document.getElementById(workId);
+            if (selectedWork) {
+                selectedWork.classList.add('active');
+            }
+            
+            // Add active class to clicked link
+            linkElement.classList.add('active');
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            // Show 2025 works by default
+            document.getElementById('year-2025').style.display = 'block';
+        });
+    </script>
+</body>
+</html>
