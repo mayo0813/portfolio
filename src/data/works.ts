@@ -6,7 +6,7 @@ export const worksData: YearSection[] = [
     works: [
       {
         id: "needsomeone",
-        title: "NEEDSOMEONE?",
+        title: "NEED SOMEONE?",
         year: "2025",
         materials: "3D Interactive Game",
         description: `게임을 시작한 후 첫 번째 공간 속엔 나 홀로 게임을 진행하게 된다. 그러나 핑퐁게임은 상대가 있어야만 진행할 수 있는 게임으로 처음 3번은 필연적으로 실패를 경험하게 된다. 실패가 세 번 쌓이면 NEED SOMEONE? 이라는 창이 뜨면서 YES와 NO 창이 뜬다. YES의 경우 2인 플레이로 전환이 되고 NO의 경우 혼자서도 플레이할 수 있도록 미러링이 된다.
@@ -20,7 +20,7 @@ export const worksData: YearSection[] = [
 그러나 진정으로 누군가와 함께 플레이할 관객이 몇 명이나 될까. 결국 player 2도 왼손으로 대체될지도 모른다. 우리의 이 끝없는 고독은 해결할 수 있을까?`,
         imageUrl: "https://raw.githubusercontent.com/mayo0813/portfolio/main/needsomeone.png",
         projectUrl: "https://mayo0813.github.io/needsomeone/"
-      },  // 쉼표 추가
+      },  
       {
         id: "exhibitionism",
         title: "Exhibitionism",
@@ -35,6 +35,19 @@ export const worksData: YearSection[] = [
 숨겨지면 존재가 소멸된다. 그러나 노출하여도 존재는 소멸된다. 그렇기 때문에 더더욱 노출을 하게 되는 것 같다는 생각이 들었다.이것이 바로 현대 디지털 사회가 만들어낸 존재론적 딜레마다. 우리는 소멸을 피하려다 소멸로 향한다.`,
         imageUrl: "https://raw.githubusercontent.com/mayo0813/portfolio/main/exhibitionism.png",
         projectUrl: "https://mayo0813.github.io/exhibitionism/"
+      },
+      {
+        id: "drift",
+        title: "Drift",
+        year: "2025",
+        materials: "Interactive Web Experience",
+        description: `나는 건너편을 볼 수 없고 표면만을 맴돈다.
+약간의 패배감. 약간의 무력감. 약간의 좌절감.
+습기가 가득찬 유리벽 앞에 서있는 것 같다.
+근처에 다가가기는커녕 미끄러진다. 가볍다. 무게가 없다. 나의 말들은 미끄러지고 헤메인다.
+어디서든 항상 겉돌고 있다. 본질에 다가가지 못한채 맴도는 느낌이다.`,
+        imageUrl: "https://raw.githubusercontent.com/mayo0813/portfolio/main/drift.png",
+        projectUrl: "https://mayo0813.github.io/drift/"
       },
       {
         id: "youarefinallyhere",
