@@ -25,7 +25,7 @@ const WorkDetail: React.FC<WorkDetailProps> = ({ work }) => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className="w-[700px]"
+      className="w-full lg:w-[700px] lg:mx-32 xl:mx-80"
     >
       <div className="w-full">
         {/* Image Grid */}
