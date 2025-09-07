@@ -8,7 +8,7 @@ export const worksData: YearSection[] = [
         id: "needsomeone",
         title: "NEED SOMEONE?",
         year: "2025",
-        materials: "3D Interactive Game",
+        materials: "2D Interactive Game",
         description: `게임을 시작한 후 첫 번째 공간 속엔 나 홀로 게임을 진행하게 된다. 그러나 핑퐁게임은 상대가 있어야만 진행할 수 있는 게임으로 처음 3번은 필연적으로 실패를 경험하게 된다. 실패가 세 번 쌓이면 NEED SOMEONE? 이라는 창이 뜨면서 YES와 NO 창이 뜬다. YES의 경우 2인 플레이로 전환이 되고 NO의 경우 혼자서도 플레이할 수 있도록 미러링이 된다.
 
 여기서 Player 2는 타자다. 타자(player 2)를 원하지 않는 사람은 홀로 남겨진다. 여전히 게임은 진행할 수 있다. 상대편은 나를 미러링한다. 별개로 존재하니 타자가 될 수 있을까? 나는 나를 위한 타자를 연기할 수 있을까? 이 게임에서 승리하면 YOU WIN이라는 문구가 뜬다. 여기서 'YOU'는 누구일까? '나'일까? 아니면 상대를 연기한 '나'일까?
